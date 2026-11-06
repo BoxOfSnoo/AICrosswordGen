@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="AICrosswordGen.Views.AboutWindow"
         Title="About AICrosswordGen"
-        Width="380" Height="220"
+        Width="380" Height="280"
         CanResize="False"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner">
@@ -10,6 +10,8 @@
         <TextBlock Text="AICrosswordGen" FontWeight="Bold" FontSize="16"/>
         <TextBlock Text="Dense newspaper-style crossword generator." TextWrapping="Wrap"/>
         <TextBlock Text="Cross-platform Avalonia GUI. C# /.NET 10." TextWrapping="Wrap"/>
+        <TextBlock Text="https://github.com/BoxOfSnoo/AICrosswordGen" TextWrapping="Wrap"/>
+        <TextBlock Text="Jonathan Markevich &lt;jon@jonandtina.net&gt;" TextWrapping="Wrap"/>
         <Button Content="OK" HorizontalAlignment="Right" Click="Ok_Click"/>
     </StackPanel>
 </Window>
