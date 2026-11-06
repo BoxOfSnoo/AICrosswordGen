@@ -154,7 +154,7 @@ public partial class MainWindow : Window
                 {
                     Background = white ? Brushes.White : Brushes.Black,
                     BorderBrush = Brushes.Black,
-                    BorderThickness = new Avalonia.Thickness(2)
+                    BorderThickness = new Avalonia.Thickness(1)
                 };
                 int number = numbers[r, c];
                 string letter = _best.Grid.Cells.TryGetValue((minR + r, minC + c), out char ch) ? ch.ToString() : "";
@@ -164,13 +164,17 @@ public partial class MainWindow : Window
                     {
                         Text = number.ToString(),
                         FontSize = 7,
+                        Foreground = Brushes.Black,
                         Margin = new Avalonia.Thickness(1, 0, 0, 0)
                     });
                 if (white)
                     panel.Children.Add(new TextBlock
                     {
                         Text = letter,
-                        FontSize = 13
+                        FontSize = 13,
+                        Foreground = Brushes.Black,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
                     });
                 cell.Child = panel;
                 Grid.SetRow(cell, r);
