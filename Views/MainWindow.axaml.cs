@@ -251,4 +251,28 @@ public partial class MainWindow : Window
     {
         await new AboutWindow().ShowDialog(this);
     }
+
+    private void ThemeDark_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (Avalonia.Application.Current != null)
+        {
+            Avalonia.Application.Current.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
+        }
+    }
+
+    private void ThemeLight_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (Avalonia.Application.Current != null)
+        {
+            Avalonia.Application.Current.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
+        }
+    }
+
+    private void ThemeSystem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (Avalonia.Application.Current != null)
+        {
+            Avalonia.Application.Current.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Default;
+        }
+    }
 }

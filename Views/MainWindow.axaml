@@ -15,6 +15,11 @@
                 <Separator />
                 <MenuItem Header="_Quit" Click="Quit_Click"/>
             </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="_Dark" Click="ThemeDark_Click"/>
+                <MenuItem Header="_Light" Click="ThemeLight_Click"/>
+                <MenuItem Header="_System" Click="ThemeSystem_Click"/>
+            </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Options..." Click="Options_Click"/>
                 <MenuItem Header="_About..." Click="About_Click"/>
