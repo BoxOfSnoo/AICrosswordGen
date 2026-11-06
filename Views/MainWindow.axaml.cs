@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        SystemItem.Header = "✓ System";
         Loaded += async (_, _) =>
         {
             if (!File.Exists("words.txt")) return;
@@ -252,27 +253,29 @@ public partial class MainWindow : Window
         await new AboutWindow().ShowDialog(this);
     }
 
-    private void ThemeDark_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void SetTheme(Avalonia.Styling.ThemeVariant variant)
     {
         if (Avalonia.Application.Current != null)
         {
-            Avalonia.Application.Current.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
+            Avalonia.Application.Current.RequestedThemeVariant = variant;
         }
+        DarkItem.Header = variant == Avalonia.Styling.ThemeVariant.Dark ? "✓ Dark" : "_Dark";
+        LightItem.Header = variant == Avalonia.Styling.ThemeVariant.Light ? "✓ Light" : "_Light";
+        SystemItem.Header = variant == Avalonia.Styling.ThemeVariant.Default ? "✓ System" : "_System";
+    }
+
+    private void ThemeDark_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        SetTheme(Avalonia.Styling.ThemeVariant.Dark);
     }
 
     private void ThemeLight_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (Avalonia.Application.Current != null)
-        {
-            Avalonia.Application.Current.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
-        }
+        SetTheme(Avalonia.Styling.ThemeVariant.Light);
     }
 
     private void ThemeSystem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (Avalonia.Application.Current != null)
-        {
-            Avalonia.Application.Current.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Default;
-        }
+        SetTheme(Avalonia.Styling.ThemeVariant.Default);
     }
 }

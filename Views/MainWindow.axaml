@@ -16,9 +16,9 @@
                 <MenuItem Header="_Quit" Click="Quit_Click"/>
             </MenuItem>
             <MenuItem Header="_View">
-                <MenuItem Header="_Dark" Click="ThemeDark_Click"/>
-                <MenuItem Header="_Light" Click="ThemeLight_Click"/>
-                <MenuItem Header="_System" Click="ThemeSystem_Click"/>
+                <MenuItem x:Name="DarkItem" Header="_Dark" Click="ThemeDark_Click"/>
+                <MenuItem x:Name="LightItem" Header="_Light" Click="ThemeLight_Click"/>
+                <MenuItem x:Name="SystemItem" Header="_System" Click="ThemeSystem_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Options..." Click="Options_Click"/>
