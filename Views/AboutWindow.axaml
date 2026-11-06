@@ -1,0 +1,15 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AICrosswordGen.Views.AboutWindow"
+        Title="About AICrosswordGen"
+        Width="380" Height="220"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="AICrosswordGen" FontWeight="Bold" FontSize="16"/>
+        <TextBlock Text="Dense newspaper-style crossword generator." TextWrapping="Wrap"/>
+        <TextBlock Text="Cross-platform Avalonia GUI. C# /.NET 10." TextWrapping="Wrap"/>
+        <Button Content="OK" HorizontalAlignment="Right" Click="Ok_Click"/>
+    </StackPanel>
+</Window>

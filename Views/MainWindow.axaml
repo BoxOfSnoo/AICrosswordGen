@@ -1,0 +1,49 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AICrosswordGen.Views.MainWindow"
+        Title="AICrosswordGen"
+        Width="1100" Height="700">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Load Word List..." Click="LoadWordList_Click"/>
+                <MenuItem Header="_Generate" Click="Generate_Click"/>
+                <Separator />
+                <MenuItem Header="Save _PUZ..." Click="SavePuz_Click"/>
+                <MenuItem Header="Save Blank _PDF..." Click="SavePdf_Click"/>
+                <MenuItem Header="Save _Text..." Click="SaveText_Click"/>
+                <Separator />
+                <MenuItem Header="_Quit" Click="Quit_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_Options..." Click="Options_Click"/>
+                <MenuItem Header="_About..." Click="About_Click"/>
+            </MenuItem>
+        </Menu>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="8" Spacing="8">
+            <ProgressBar x:Name="ProgressBar" Width="200" Minimum="0" Value="0" IsVisible="False"/>
+            <TextBlock x:Name="ProgressText" IsVisible="False" VerticalAlignment="Center" Text="0/0"/>
+            <TextBlock x:Name="StatusText" VerticalAlignment="Center" Text="Ready"/>
+        </StackPanel>
+        <Grid ColumnDefinitions="250,*,250">
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Across" FontWeight="Bold" Margin="8,8,8,4"/>
+                    <ListBox x:Name="AcrossList"/>
+                </StackPanel>
+            </ScrollViewer>
+            <Grid Grid.Column="1">
+                <ScrollViewer Margin="16" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <Grid x:Name="Board"/>
+                </ScrollViewer>
+                <TextBlock x:Name="BoardOverlay" Text="Generate again" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" IsVisible="False"/>
+            </Grid>
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Down" FontWeight="Bold" Margin="8,8,8,4"/>
+                    <ListBox x:Name="DownList"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</Window>

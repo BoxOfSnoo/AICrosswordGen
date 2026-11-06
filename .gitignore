@@ -1,0 +1,6 @@
+bin/
+obj/
+crossword.puz
+test.pdf
+test.puz
+/*.txt
