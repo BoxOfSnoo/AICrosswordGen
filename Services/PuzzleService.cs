@@ -30,10 +30,47 @@ public static class PuzzleService
         return null;
     }
 
+    static bool HasVowel(string w)
+    {
+        for (int i = 0; i < w.Length; i++)
+        {
+            if ("AEIOU".Contains(w[i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static bool HasVariedLetters(string w)
+    {
+        var seen = new HashSet<char>();
+
+        for (int i = 0; i < w.Length; i++)
+        {
+            seen.Add(w[i]);
+        }
+
+        return seen.Count > 1;
+    }
+
+    static int CompareByLength(string a, string b)
+    {
+        return a.Length.CompareTo(b.Length);
+    }
+
+    static int CompareByScoreDesc(Models.Placement a, Models.Placement b)
+    {
+        return b.Score.CompareTo(a.Score);
+    }
+
     public static SolveResult Generate(IEnumerable<string> words, AppSettings settings, Action<int, int>? progress = null)
     {
         var solver = new Solver(words, settings.Seed);
+
         var best = solver.Solve(settings.Iterations, progress);
+
         var primary = FindResource("google-10000-english-no-swears.txt");
         var fallback = FindResource("words_alpha.txt");
 
@@ -49,24 +86,26 @@ public static class PuzzleService
                     continue;
                 }
 
-                foreach (var w in File.ReadLines(path).Select(x => x.Trim().ToUpperInvariant()))
+                foreach (var line in File.ReadLines(path))
                 {
+                    var w = line.Trim().ToUpperInvariant();
+
                     if (w.Length < 3 || w.Length > 7)
                     {
                         continue;
                     }
 
-                    if (!w.All(char.IsLetter))
+                    if (!Solver.IsAllLetters(w))
                     {
                         continue;
                     }
 
-                    if (w.Distinct().Count() <= 1)
+                    if (!HasVariedLetters(w))
                     {
                         continue;
                     }
 
-                    if (!w.Any(c => "AEIOU".Contains(c)))
+                    if (!HasVowel(w))
                     {
                         continue;
                     }
@@ -78,7 +117,7 @@ public static class PuzzleService
                 }
             }
 
-            fillers = fillers.OrderBy(w => w.Length).ToList();
+            fillers.Sort(CompareByLength);
 
             foreach (var w in fillers)
             {
@@ -102,16 +141,27 @@ public static class PuzzleService
                     continue;
                 }
 
-                var cands = best.Grid.Candidates(w).Where(c => c.BboxGrowth == 0).ToList();
+                var cands = new List<Models.Placement>();
+
+                foreach (var c in best.Grid.Candidates(w))
+                {
+                    if (c.BboxGrowth == 0)
+                    {
+                        cands.Add(c);
+                    }
+                }
 
                 if (cands.Count == 0)
                 {
                     continue;
                 }
 
-                cands.Sort((a, b) => b.Score.CompareTo(a.Score));
+                cands.Sort(CompareByScoreDesc);
+
                 best.Grid.Place(cands[0]);
+
                 usedSet.Add(w);
+
                 best = best with
                 {
                     Density = (double)best.Grid.Cells.Count / Math.Max(1, best.Grid.Area()),

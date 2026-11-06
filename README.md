@@ -44,7 +44,7 @@ dotnet run
 
 - **Iterations** — how many layout attempts the solver tries. More = denser puzzles, slower.
   Default 30. Keep it low for a quick try, higher for a better puzzle.
-- **Seed** — random number. Same seed + same words = same puzzle.
+- **Seed** — random number. Generate adds 1 to the seed each time, so note the seed shown before you press Generate if you want to repeat that puzzle.
 - **Use filler words** — when on, short words (3–7 letters) from the word lists in `Resources/` can fill empty spaces inside the square without growing it. This raises density a lot.
 
 ## Start-up files and `Resources/`

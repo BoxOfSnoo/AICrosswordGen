@@ -7,15 +7,31 @@ public static class SettingsStore
         get
         {
             bool unix = OperatingSystem.IsLinux() || OperatingSystem.IsMacOS();
+
             if (unix)
             {
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "aicrosswordgen");
             }
+
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AICrosswordGen");
         }
     }
-    public static string OptionsFile => Path.Combine(Folder, "options.json");
-    public static string BlocklistFile => Path.Combine(Folder, "blocklist.txt");
+
+    public static string OptionsFile
+    {
+        get
+        {
+            return Path.Combine(Folder, "options.json");
+        }
+    }
+
+    public static string BlocklistFile
+    {
+        get
+        {
+            return Path.Combine(Folder, "blocklist.txt");
+        }
+    }
 
     public static AppSettings Load()
     {
@@ -24,7 +40,9 @@ public static class SettingsStore
             if (File.Exists(OptionsFile))
             {
                 var json = File.ReadAllText(OptionsFile);
+
                 var s = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
+
                 if (s != null)
                 {
                     return s;
@@ -34,29 +52,45 @@ public static class SettingsStore
         catch
         {
         }
+
         return new AppSettings();
     }
 
     public static void Save(AppSettings s)
     {
         Directory.CreateDirectory(Folder);
+
         File.WriteAllText(OptionsFile, System.Text.Json.JsonSerializer.Serialize(s));
     }
 
     public static HashSet<string> LoadBlocklist()
     {
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         if (!File.Exists(BlocklistFile))
         {
-            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            return set;
         }
 
-        return new HashSet<string>(File.ReadAllLines(BlocklistFile).Select(x => x.Trim().ToUpperInvariant()).Where(x => x.Length > 0), StringComparer.OrdinalIgnoreCase);
+        foreach (var line in File.ReadAllLines(BlocklistFile))
+        {
+            var w = line.Trim().ToUpperInvariant();
+
+            if (w.Length > 0)
+            {
+                set.Add(w);
+            }
+        }
+
+        return set;
     }
 
     public static void AddBlocklist(string word)
     {
         Directory.CreateDirectory(Folder);
+
         var set = LoadBlocklist();
+
         if (set.Add(word.Trim().ToUpperInvariant()))
         {
             File.AppendAllText(BlocklistFile, word.Trim().ToUpperInvariant() + "\n");
