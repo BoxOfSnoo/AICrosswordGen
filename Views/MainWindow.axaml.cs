@@ -18,7 +18,14 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        SystemItem.Header = "✓ System";
+        var saved = _settings.Theme;
+        var variant = saved switch
+        {
+            "Dark" => Avalonia.Styling.ThemeVariant.Dark,
+            "Light" => Avalonia.Styling.ThemeVariant.Light,
+            _ => Avalonia.Styling.ThemeVariant.Default
+        };
+        SetTheme(variant);
         Loaded += async (_, _) =>
         {
             if (!File.Exists("words.txt")) return;
@@ -262,6 +269,12 @@ public partial class MainWindow : Window
         DarkItem.Header = variant == Avalonia.Styling.ThemeVariant.Dark ? "✓ Dark" : "_Dark";
         LightItem.Header = variant == Avalonia.Styling.ThemeVariant.Light ? "✓ Light" : "_Light";
         SystemItem.Header = variant == Avalonia.Styling.ThemeVariant.Default ? "✓ System" : "_System";
+        var name = variant == Avalonia.Styling.ThemeVariant.Dark ? "Dark" : variant == Avalonia.Styling.ThemeVariant.Light ? "Light" : "System";
+        if (_settings.Theme != name)
+        {
+            _settings = _settings with { Theme = name };
+            SettingsStore.Save(_settings);
+        }
     }
 
     private void ThemeDark_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

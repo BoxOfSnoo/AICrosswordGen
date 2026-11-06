@@ -2,7 +2,7 @@ namespace AICrosswordGen.Services;
 
 // Filler words: Resources/google-10000-english-no-swears.txt based on
 // https://github.com/first20hours/google-10000-english (MIT), see README Credits.
-public sealed record AppSettings(int Iterations = 30, int Seed = 42, bool UseFiller = true);
+public sealed record AppSettings(int Iterations = 30, int Seed = 42, bool UseFiller = true, string Theme = "System");
 
 public static class PuzzleService
 {
