@@ -82,6 +82,7 @@ Output lands in `bin/Release/net10.0/<rid>/publish/` — one self-contained exe,
 ## Credits & licences
 
 - **Across Lite `.puz` file format** — documented at [code.google.com/archive/p/puz/wikis/FileFormat.wiki](https://code.google.com/archive/p/puz/wikis/FileFormat.wiki). Used by `Services/PuzWriter.cs` for the `.puz` export.
+- **Across Lite text format** — documented at [www.litsoft.com/across/docs/AcrossTextFormat.pdf](https://www.litsoft.com/across/docs/AcrossTextFormat.pdf). Used by `Services/AcrossTextWriter.cs` for ".txt (Across Lite format)".
 - **google-10000-english word list** — [github.com/first20hours/google-10000-english](https://github.com/first20hours/google-10000-english) (MIT, see that repo for licence text). Wrapped as `Resources/google-10000-english-no-swears.txt` and used as filler words.
 
 ## Project layout

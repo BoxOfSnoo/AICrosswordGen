@@ -11,7 +11,7 @@
                 <Separator />
                 <MenuItem Header="Save _PUZ..." Click="SavePuz_Click"/>
                 <MenuItem Header="Save Blank _PDF..." Click="SavePdf_Click"/>
-                <MenuItem Header="Save _Text..." Click="SaveText_Click"/>
+                <MenuItem Header="Save .txt (Across Lite format)..." Click="SaveText_Click"/>
                 <Separator />
                 <MenuItem Header="_Quit" Click="Quit_Click"/>
             </MenuItem>

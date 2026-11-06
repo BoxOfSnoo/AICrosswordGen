@@ -230,14 +230,7 @@ public partial class MainWindow : Window
         if (_best == null || _best.Grid.Cells.Count == 0) { SetStatus("Generate a puzzle first"); return; }
         var path = await PickSaveAsync(".txt");
         if (path == null) return;
-        var (numbers, across, down) = PuzzleClues.Get(_best.Grid);
-        var (minR, maxR, minC, maxC) = _best.Grid.Bounds();
-        var text = $"Size: {maxC - minC + 1}x{maxR - minR + 1}, density: {_best.Density:P1}, used: {_best.Used.Count}\n"
-            + PuzWriter.TextOutput(_best.Grid)
-            + "\n\nAcross\n" + string.Join("\n", across)
-            + "\n\nDown\n" + string.Join("\n", down)
-            + "\n";
-        await File.WriteAllTextAsync(path, text);
+        await File.WriteAllTextAsync(path, AcrossTextWriter.Text(_best.Grid, title: "AICrosswordGen"));
         SetStatus($"Saved {path}");
     }
 

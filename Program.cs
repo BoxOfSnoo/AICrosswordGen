@@ -24,8 +24,7 @@ public static class Program
             if (!best.Grid.IsValid()) throw new Exception("Generated invalid");
             PuzWriter.Write(best.Grid, "test.puz", title: "Test");
             PdfWriter.WriteBlank(best.Grid, "test.pdf", title: "Test");
-            var (numbers, across, down) = PuzzleClues.Get(best.Grid);
-            File.WriteAllText("test.txt", PuzWriter.TextOutput(best.Grid) + "\n\nAcross\n" + string.Join("\n", across));
+            File.WriteAllText("test.txt", AcrossTextWriter.Text(best.Grid, title: "Test"));
             Console.WriteLine($"test ok density {best.Density:P1}");
             return;
         }
