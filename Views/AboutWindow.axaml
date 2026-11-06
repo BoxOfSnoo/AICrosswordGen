@@ -10,7 +10,7 @@
         <TextBlock Text="AICrosswordGen" FontWeight="Bold" FontSize="16"/>
         <TextBlock Text="Dense newspaper-style crossword generator." TextWrapping="Wrap"/>
         <TextBlock Text="Cross-platform Avalonia GUI. C# /.NET 10." TextWrapping="Wrap"/>
-        <TextBlock Text="https://github.com/BoxOfSnoo/AICrosswordGen" TextWrapping="Wrap"/>
+        <Button x:Name="RepoLink" Content="https://github.com/BoxOfSnoo/AICrosswordGen" Background="Transparent" Padding="0" VerticalAlignment="Center" Click="RepoLink_Click"/>
         <TextBlock Text="Jonathan Markevich &lt;jon@jonandtina.net&gt;" TextWrapping="Wrap"/>
         <Button Content="OK" HorizontalAlignment="Right" Click="Ok_Click"/>
     </StackPanel>
