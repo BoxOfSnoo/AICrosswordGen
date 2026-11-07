@@ -12,13 +12,13 @@ public sealed record SolveResult(
 
 public sealed class Solver
 {
-    private readonly List<string> _words;
+    private readonly List<string> words;
 
-    private readonly int _seed;
+    private readonly int seed;
 
     public Solver(IEnumerable<string> input, int seed = 1)
     {
-        _words = new List<string>();
+        this.words = new List<string>();
 
         var seen = new HashSet<string>();
 
@@ -38,11 +38,11 @@ public sealed class Solver
 
             if (seen.Add(w))
             {
-                _words.Add(w);
+                this.words.Add(w);
             }
         }
 
-        _seed = seed;
+        this.seed = seed;
     }
 
     internal static bool IsAllLetters(string w)
@@ -62,11 +62,11 @@ public sealed class Solver
     {
         iterations = Math.Max(1, iterations);
 
-        if (_words.Count == 0)
+        if (this.words.Count == 0)
         {
             progress?.Invoke(1, 1);
 
-            return new SolveResult(new CrosswordGrid(_words), new(), new(), 0, 0, 0);
+            return new SolveResult(new CrosswordGrid(this.words), new(), new(), 0, 0, 0);
         }
 
         SolveResult? best = null;
@@ -147,12 +147,12 @@ public sealed class Solver
 
     SolveResult RunOnce(int iteration)
     {
-        var rng = new Random(_seed + iteration * 7919);
-        var grid = new CrosswordGrid(_words);
+        var rng = new Random(this.seed + iteration * 7919);
+        var grid = new CrosswordGrid(this.words);
 
         var keys = new Dictionary<string, double>();
 
-        foreach (var w in _words)
+        foreach (var w in this.words)
         {
             keys[w] = rng.NextDouble();
         }
@@ -169,7 +169,7 @@ public sealed class Solver
             return keys[a].CompareTo(keys[b]);
         }
 
-        var remaining = new List<string>(_words);
+        var remaining = new List<string>(this.words);
 
         remaining.Sort(CompareRemaining);
 
@@ -382,14 +382,14 @@ public sealed class Solver
 
         double density = area > 0 ? (double)grid.Cells.Count / area : 0;
 
-        var unused = new List<string>(_words.Except(used, StringComparer.OrdinalIgnoreCase));
+        var unused = new List<string>(this.words.Except(used, StringComparer.OrdinalIgnoreCase));
 
-        return new SolveResult(grid, used, unused, density, area, _words.Count);
+        return new SolveResult(grid, used, unused, density, area, this.words.Count);
     }
 
     CrosswordGrid Rebuild(IEnumerable<Placement> ps)
     {
-        var g = new CrosswordGrid(_words);
+        var g = new CrosswordGrid(this.words);
 
         foreach (var p in ps)
         {

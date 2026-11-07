@@ -79,6 +79,31 @@ public static class Program
             PdfWriter.WriteBlank(best.Grid, "test.pdf", title: "Test");
             File.WriteAllText("test.txt", AcrossTextWriter.Text(best.Grid, title: "Test"));
 
+            // work-file round-trip: escaped clue and clue equal to its answer survive
+            File.WriteAllText("test-inprogress.txt", AcrossTextWriter.Text(g, title: "Test", acrossClues: new string?[] { "<5 letters" }, downClues: new string?[] { "CAT" }, blankMissing: true));
+
+            var (g2, ac, dc) = InProgressStore.Read("test-inprogress.txt");
+
+            if (g2.Cells.Count != g.Cells.Count || !g2.Cells.All(kv => g2.Cells.TryGetValue(kv.Key, out char ch) && ch == kv.Value))
+            {
+                throw new Exception("In-progress grid mismatch");
+            }
+
+            if (ac.Count == 0 || ac[0] != "<5 letters" || dc.Count == 0 || dc[0] != "CAT")
+            {
+                throw new Exception("In-progress clues mismatch");
+            }
+
+            // missing clues round-trip as blank
+            File.WriteAllText("test-inprogress2.txt", AcrossTextWriter.Text(g, title: "Test", acrossClues: new string?[] { null }, downClues: new string?[] { null }, blankMissing: true));
+
+            var (_, ac2, dc2) = InProgressStore.Read("test-inprogress2.txt");
+
+            if (ac2.Count == 0 || ac2[0] != null || dc2.Count == 0 || dc2[0] != null)
+            {
+                throw new Exception("Blank clues mismatch");
+            }
+
             // clues that do not fit page 1 must flow to extra pages, not be cut
             var pdfText = System.Text.Encoding.Latin1.GetString(File.ReadAllBytes("test.pdf"));
             int pageCount = 0;

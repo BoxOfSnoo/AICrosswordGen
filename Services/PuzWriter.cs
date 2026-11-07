@@ -6,7 +6,8 @@ namespace AICrosswordGen.Services;
 public static class PuzWriter
 {
     public static void Write(CrosswordGrid grid, string path,
-        string title = "", string author = "", string copyright = "", string notes = "")
+        string title = "", string author = "", string copyright = "", string notes = "",
+        IReadOnlyList<string?>? acrossClues = null, IReadOnlyList<string?>? downClues = null)
     {
         if (grid.Cells.Count == 0)
         {
@@ -54,26 +55,30 @@ public static class PuzWriter
         // interleaved by number: rebuild ordered list from formatted entries
         var clues = new List<(int num, int order, string word)>();
 
-        foreach (var s in acrossFormatted)
+        foreach (var (s, i) in acrossFormatted.Select((s, i) => (s, i)))
         {
             int dot = s.IndexOf(". ");
 
             string word = s[(dot + 2)..];
-
+            string? clue = acrossClues != null && i < acrossClues.Count ? acrossClues[i] : null;
             int num = int.Parse(s[..dot]);
 
-            clues.Add((num, 0, word));
+            string text = (string.IsNullOrWhiteSpace(clue) ? word : clue!).Replace('\r', ' ').Replace('\n', ' ');
+
+            clues.Add((num, 0, text));
         }
 
-        foreach (var s in downFormatted)
+        foreach (var (s, i) in downFormatted.Select((s, i) => (s, i)))
         {
             int dot = s.IndexOf(". ");
 
             string word = s[(dot + 2)..];
-
+            string? clue = downClues != null && i < downClues.Count ? downClues[i] : null;
             int num = int.Parse(s[..dot]);
 
-            clues.Add((num, 1, word));
+            string text = (string.IsNullOrWhiteSpace(clue) ? word : clue!).Replace('\r', ' ').Replace('\n', ' ');
+
+            clues.Add((num, 1, text));
         }
 
         int CompareClues((int num, int order, string word) a, (int num, int order, string word) b)

@@ -28,13 +28,13 @@ public sealed class CrosswordGrid
 
     public HashSet<string> Dictionary { get; }
 
-    private int _minR = int.MaxValue;
+    private int minR = int.MaxValue;
 
-    private int _maxR = int.MinValue;
+    private int maxR = int.MinValue;
 
-    private int _minC = int.MaxValue;
+    private int minC = int.MaxValue;
 
-    private int _maxC = int.MinValue;
+    private int maxC = int.MinValue;
 
     public CrosswordGrid(IEnumerable<string> words)
     {
@@ -56,7 +56,7 @@ public sealed class CrosswordGrid
             return (0, -1, 0, -1);
         }
 
-        return (_minR, _maxR, _minC, _maxC);
+        return (this.minR, this.maxR, this.minC, this.maxC);
     }
 
     public bool IsValid()
@@ -156,10 +156,39 @@ public sealed class CrosswordGrid
 
             Cells[(r, c)] = p.Word[i];
 
-            _minR = Math.Min(_minR, r);
-            _maxR = Math.Max(_maxR, r);
-            _minC = Math.Min(_minC, c);
-            _maxC = Math.Max(_maxC, c);
+            this.minR = Math.Min(this.minR, r);
+            this.maxR = Math.Max(this.maxR, r);
+            this.minC = Math.Min(this.minC, c);
+            this.maxC = Math.Max(this.maxC, c);
+        }
+    }
+
+    public void LoadGrid(string[] rows)
+    {
+        Cells.Clear();
+
+        this.minR = int.MaxValue;
+        this.maxR = int.MinValue;
+        this.minC = int.MaxValue;
+        this.maxC = int.MinValue;
+
+        for (int r = 0; r < rows.Length; r++)
+        {
+            for (int c = 0; c < rows[r].Length; c++)
+            {
+                char ch = rows[r][c];
+
+                if (ch == '.')
+                {
+                    continue;
+                }
+
+                Cells[(r, c)] = ch;
+                this.minR = Math.Min(this.minR, r);
+                this.maxR = Math.Max(this.maxR, r);
+                this.minC = Math.Min(this.minC, c);
+                this.maxC = Math.Max(this.maxC, c);
+            }
         }
     }
 

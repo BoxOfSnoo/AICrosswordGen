@@ -7,7 +7,8 @@ namespace AICrosswordGen.Services;
 /// <summary>Minimal blank crossword PDF (no dependencies): grid + numbers + clue lists.</summary>
 public static class PdfWriter
 {
-    public static void WriteBlank(CrosswordGrid grid, string path, string title = "AICrosswordGen")
+    public static void WriteBlank(CrosswordGrid grid, string path, string title = "AICrosswordGen",
+        IReadOnlyList<string?>? acrossClues = null, IReadOnlyList<string?>? downClues = null)
     {
         if (grid.Cells.Count == 0)
         {
@@ -15,6 +16,24 @@ public static class PdfWriter
         }
 
         var (numbers, across, down) = PuzzleClues.Get(grid);
+
+        var displayAcross = new List<string>();
+
+        for (int i = 0; i < across.Count; i++)
+        {
+            string? clue = acrossClues != null && i < acrossClues.Count ? acrossClues[i] : null;
+
+            displayAcross.Add(string.IsNullOrWhiteSpace(clue) ? across[i] : $"{across[i]} \u2013 {clue!.Replace('\r', ' ').Replace('\n', ' ')}");
+        }
+
+        var displayDown = new List<string>();
+
+        for (int i = 0; i < down.Count; i++)
+        {
+            string? clue = downClues != null && i < downClues.Count ? downClues[i] : null;
+
+            displayDown.Add(string.IsNullOrWhiteSpace(clue) ? down[i] : $"{down[i]} \u2013 {clue!.Replace('\r', ' ').Replace('\n', ' ')}");
+        }
 
         var (minR, maxR, minC, maxC) = grid.Bounds();
 
@@ -92,7 +111,7 @@ public static class PdfWriter
 
             ty -= 12;
 
-            foreach (var s in across)
+            foreach (var s in displayAcross)
             {
                 Text(ox, ty, 7, s);
 
@@ -105,7 +124,7 @@ public static class PdfWriter
 
             dty -= 12;
 
-            foreach (var s in down)
+            foreach (var s in displayDown)
             {
                 Text(col2, dty, 7, s);
 
@@ -121,7 +140,7 @@ public static class PdfWriter
 
             double ty = 728;
 
-            foreach (var s in across)
+            foreach (var s in displayAcross)
             {
                 if (ty < 40)
                 {
@@ -154,7 +173,7 @@ public static class PdfWriter
                 ty -= 12;
             }
 
-            foreach (var s in down)
+            foreach (var s in displayDown)
             {
                 if (ty < 40)
                 {

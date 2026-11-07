@@ -9,8 +9,8 @@
     <StackPanel Margin="16" Spacing="10">
         <TextBlock x:Name="Msg" TextWrapping="Wrap"/>
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,10,0,0">
-            <Button Content="Overwrite" Click="Ok_Click"/>
-            <Button Content="Cancel" Click="Cancel_Click"/>
+            <Button x:Name="OkButton" Content="Overwrite" Click="Ok_Click"/>
+            <Button x:Name="CancelButton" Content="Cancel" Click="Cancel_Click"/>
         </StackPanel>
     </StackPanel>
 </Window>

@@ -9,8 +9,8 @@ It works on Windows, Linux and macOS. It is built with C# / .NET 10 and Avalonia
 1. You give it words, for example one word per line in a `.txt` file.
 2. It searches for a small square layout (16–24 cells per side) where words cross each other.
 3. Every 3+ letter run in the grid is a real word from your list — no nonsense words.
-4. It shows the puzzle in the centre, Across clues on the left, Down clues on the right.
-5. It can save the puzzle as `.puz` (Across Lite format), a blank PDF with clues, or plain text.
+4. It shows the puzzle in the centre, Across answers on the left, Down answers on the right. Click the pencil next to an answer to type its clue; the pencil turns green when a clue is saved.
+5. It can save the puzzle as `.puz` (Across Lite format), a blank PDF with clues, or plain text. When saving .puz it also saves .txt beside it and asks whether the puzzle is complete.
 
 See [AI_POLICY.md](AI_POLICY.md) for how AI tools may be used on this project.
 
@@ -30,17 +30,22 @@ dotnet run
 
 **File**
 - **Load Word List** — open a `.txt` file.
-- **Generate** — builds a new puzzle.
-- **Save PUZ** — Across Lite binary format (".puz").
+- **Open Puzzle in Progress** — open a saved work file. Files outside the work folder are copied in first, so edits never change the original.
+- **Recent In Progress** — the last 5 work files, newest first.
+- **Generate** — builds a new puzzle. Warns first if the current puzzle was resumed or a clue was edited.
+- **Save PUZ** — Across Lite binary format (".puz"). Also saves `.txt` to the same folder, then asks whether to mark the puzzle complete. Complete deletes its work file.
 - **Save Blank PDF** — printable grid with blank cells, numbers and clue lists.
 - **Save Text** — grid text plus Across/Down lists.
 - **Quit**
 
-**Help**
+**View**
+- **Dark / Light / System** — theme.
 - **Options** — see below.
+
+**Help**
 - **About** — version info.
 
-## Options (Help > Options)
+## Options (View > Options)
 
 - **Iterations** — how many layout attempts the solver tries. More = denser puzzles, slower.
   Default 30. Keep it low for a quick try, higher for a better puzzle.

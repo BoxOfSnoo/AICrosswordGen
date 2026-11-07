@@ -4,7 +4,15 @@ namespace AICrosswordGen.Services;
 
 public static class AcrossTextWriter
 {
-    public static string Text(CrosswordGrid grid, string title = "AICrosswordGen", string author = "", string copyright = "", string notes = "")
+    static string Sanitize(string s)
+    {
+        s = s.Replace('\r', ' ').Replace('\n', ' ');
+
+        return s.StartsWith("<") ? " " + s : s;
+    }
+
+    public static string Text(CrosswordGrid grid, string title = "AICrosswordGen", string author = "", string copyright = "", string notes = "",
+        IReadOnlyList<string?>? acrossClues = null, IReadOnlyList<string?>? downClues = null, bool blankMissing = false)
     {
         var (numbers, across, down) = PuzzleClues.Get(grid);
 
@@ -29,20 +37,26 @@ public static class AcrossTextWriter
 
         sb.AppendLine("<ACROSS>");
 
-        foreach (var s in across)
+        for (int i = 0; i < across.Count; i++)
         {
-            int dot = s.IndexOf(". ");
+            int dot = across[i].IndexOf(". ");
 
-            sb.AppendLine(s[(dot + 2)..]);
+            string word = across[i][(dot + 2)..];
+            string? clue = acrossClues != null && i < acrossClues.Count ? acrossClues[i] : null;
+
+            sb.AppendLine(string.IsNullOrWhiteSpace(clue) ? (blankMissing ? "" : word) : Sanitize(clue));
         }
 
         sb.AppendLine("<DOWN>");
 
-        foreach (var s in down)
+        for (int i = 0; i < down.Count; i++)
         {
-            int dot = s.IndexOf(". ");
+            int dot = down[i].IndexOf(". ");
 
-            sb.AppendLine(s[(dot + 2)..]);
+            string word = down[i][(dot + 2)..];
+            string? clue = downClues != null && i < downClues.Count ? downClues[i] : null;
+
+            sb.AppendLine(string.IsNullOrWhiteSpace(clue) ? (blankMissing ? "" : word) : Sanitize(clue));
         }
 
         if (!string.IsNullOrWhiteSpace(notes))

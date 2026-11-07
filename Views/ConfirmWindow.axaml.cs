@@ -17,6 +17,14 @@ public partial class ConfirmWindow : Window
         Msg.Text = message;
     }
 
+    public ConfirmWindow(string message, string okLabel, string cancelLabel)
+    {
+        InitializeComponent();
+        Msg.Text = message;
+        OkButton.Content = okLabel;
+        CancelButton.Content = cancelLabel;
+    }
+
     private void Ok_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Accepted = true;
