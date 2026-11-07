@@ -59,11 +59,10 @@ public static class PuzWriter
         {
             int dot = s.IndexOf(". ");
 
-            string word = s[(dot + 2)..];
             string? clue = acrossClues != null && i < acrossClues.Count ? acrossClues[i] : null;
             int num = int.Parse(s[..dot]);
 
-            string text = (string.IsNullOrWhiteSpace(clue) ? word : clue!).Replace('\r', ' ').Replace('\n', ' ');
+            string text = (string.IsNullOrWhiteSpace(clue) ? "" : clue!).Replace('\r', ' ').Replace('\n', ' ');
 
             clues.Add((num, 0, text));
         }
@@ -72,11 +71,10 @@ public static class PuzWriter
         {
             int dot = s.IndexOf(". ");
 
-            string word = s[(dot + 2)..];
             string? clue = downClues != null && i < downClues.Count ? downClues[i] : null;
             int num = int.Parse(s[..dot]);
 
-            string text = (string.IsNullOrWhiteSpace(clue) ? word : clue!).Replace('\r', ' ').Replace('\n', ' ');
+            string text = (string.IsNullOrWhiteSpace(clue) ? "" : clue!).Replace('\r', ' ').Replace('\n', ' ');
 
             clues.Add((num, 1, text));
         }

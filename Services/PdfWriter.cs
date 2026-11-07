@@ -17,13 +17,20 @@ public static class PdfWriter
 
         var (numbers, across, down) = PuzzleClues.Get(grid);
 
+        string Num(string entry)
+        {
+            int dot = entry.IndexOf(". ");
+
+            return dot >= 0 ? entry[..dot] : entry;
+        }
+
         var displayAcross = new List<string>();
 
         for (int i = 0; i < across.Count; i++)
         {
             string? clue = acrossClues != null && i < acrossClues.Count ? acrossClues[i] : null;
 
-            displayAcross.Add(string.IsNullOrWhiteSpace(clue) ? across[i] : $"{across[i]} \u2013 {clue!.Replace('\r', ' ').Replace('\n', ' ')}");
+            displayAcross.Add(string.IsNullOrWhiteSpace(clue) ? $"{Num(across[i])}." : $"{Num(across[i])}. {clue!.Replace('\r', ' ').Replace('\n', ' ')}");
         }
 
         var displayDown = new List<string>();
@@ -32,7 +39,7 @@ public static class PdfWriter
         {
             string? clue = downClues != null && i < downClues.Count ? downClues[i] : null;
 
-            displayDown.Add(string.IsNullOrWhiteSpace(clue) ? down[i] : $"{down[i]} \u2013 {clue!.Replace('\r', ' ').Replace('\n', ' ')}");
+            displayDown.Add(string.IsNullOrWhiteSpace(clue) ? $"{Num(down[i])}." : $"{Num(down[i])}. {clue!.Replace('\r', ' ').Replace('\n', ' ')}");
         }
 
         var (minR, maxR, minC, maxC) = grid.Bounds();
@@ -187,6 +194,46 @@ public static class PdfWriter
                 Text(ox, ty, 7, s);
 
                 ty -= 9;
+            }
+        }
+
+        // Solution page: filled grid at 25% of page-1 size.
+        NewPage();
+
+        double ansCell = cell * 0.25;
+        double ansW = ansCell * w;
+        double ansH = ansCell * h;
+        double ansOx = (612 - ansW) / 2;
+        double ansOy = (792 - ansH) / 2;
+        double ansNum = Math.Max(1, ansCell * 0.45);
+        double ansFont = Math.Max(1, ansCell * 0.65);
+
+        Text(ansOx, Math.Min(760, ansOy + ansH + 20), 12, "Solution");
+
+        for (int r = 0; r < h; r++)
+        {
+            for (int c = 0; c < w; c++)
+            {
+                double x = ansOx + c * ansCell;
+                double y = ansOy + (h - 1 - r) * ansCell;
+
+                bool white = grid.Cells.ContainsKey((minR + r, minC + c));
+
+                if (!white)
+                {
+                    cur.Append($"q 0 g {x:F2} {y:F2} {ansCell:F2} {ansCell:F2} re f Q\n");
+                }
+                else
+                {
+                    cur.Append($"q 0 G 0.5 w {x:F2} {y:F2} {ansCell:F2} {ansCell:F2} re S Q\n");
+
+                    if (numbers[r, c] > 0)
+                    {
+                        Text(x + 0.5, y + ansCell - ansNum - 0.5, ansNum, numbers[r, c].ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    Text(x + ansCell / 2 - ansFont * 0.3, y + ansCell / 2 - ansFont * 0.35, ansFont, grid.Cells[(minR + r, minC + c)].ToString());
+                }
             }
         }
 

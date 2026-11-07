@@ -12,7 +12,7 @@ public static class AcrossTextWriter
     }
 
     public static string Text(CrosswordGrid grid, string title = "AICrosswordGen", string author = "", string copyright = "", string notes = "",
-        IReadOnlyList<string?>? acrossClues = null, IReadOnlyList<string?>? downClues = null, bool blankMissing = false)
+        IReadOnlyList<string?>? acrossClues = null, IReadOnlyList<string?>? downClues = null)
     {
         var (numbers, across, down) = PuzzleClues.Get(grid);
 
@@ -39,24 +39,18 @@ public static class AcrossTextWriter
 
         for (int i = 0; i < across.Count; i++)
         {
-            int dot = across[i].IndexOf(". ");
-
-            string word = across[i][(dot + 2)..];
             string? clue = acrossClues != null && i < acrossClues.Count ? acrossClues[i] : null;
 
-            sb.AppendLine(string.IsNullOrWhiteSpace(clue) ? (blankMissing ? "" : word) : Sanitize(clue));
+            sb.AppendLine(string.IsNullOrWhiteSpace(clue) ? "" : Sanitize(clue));
         }
 
         sb.AppendLine("<DOWN>");
 
         for (int i = 0; i < down.Count; i++)
         {
-            int dot = down[i].IndexOf(". ");
-
-            string word = down[i][(dot + 2)..];
             string? clue = downClues != null && i < downClues.Count ? downClues[i] : null;
 
-            sb.AppendLine(string.IsNullOrWhiteSpace(clue) ? (blankMissing ? "" : word) : Sanitize(clue));
+            sb.AppendLine(string.IsNullOrWhiteSpace(clue) ? "" : Sanitize(clue));
         }
 
         if (!string.IsNullOrWhiteSpace(notes))

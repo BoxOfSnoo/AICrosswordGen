@@ -358,7 +358,7 @@ public partial class MainWindow : Window
                 this.inProgressPath = InProgressStore.CreatePath();
             }
 
-            File.WriteAllText(this.inProgressPath, AcrossTextWriter.Text(this.best.Grid, title: "AICrosswordGen", acrossClues: this.acrossClues, downClues: this.downClues, blankMissing: true));
+            File.WriteAllText(this.inProgressPath, AcrossTextWriter.Text(this.best.Grid, title: "AICrosswordGen", acrossClues: this.acrossClues, downClues: this.downClues));
             InProgressStore.TouchMru(this.inProgressPath);
             RefreshRecentMenu();
 

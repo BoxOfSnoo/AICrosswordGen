@@ -80,7 +80,7 @@ public static class Program
             File.WriteAllText("test.txt", AcrossTextWriter.Text(best.Grid, title: "Test"));
 
             // work-file round-trip: escaped clue and clue equal to its answer survive
-            File.WriteAllText("test-inprogress.txt", AcrossTextWriter.Text(g, title: "Test", acrossClues: new string?[] { "<5 letters" }, downClues: new string?[] { "CAT" }, blankMissing: true));
+            File.WriteAllText("test-inprogress.txt", AcrossTextWriter.Text(g, title: "Test", acrossClues: new string?[] { "<5 letters" }, downClues: new string?[] { "CAT" }));
 
             var (g2, ac, dc) = InProgressStore.Read("test-inprogress.txt");
 
@@ -94,14 +94,42 @@ public static class Program
                 throw new Exception("In-progress clues mismatch");
             }
 
-            // missing clues round-trip as blank
-            File.WriteAllText("test-inprogress2.txt", AcrossTextWriter.Text(g, title: "Test", acrossClues: new string?[] { null }, downClues: new string?[] { null }, blankMissing: true));
+            // missing clues round-trip as blank, never as the word itself
+            File.WriteAllText("test-inprogress2.txt", AcrossTextWriter.Text(g, title: "Test", acrossClues: new string?[] { null }, downClues: new string?[] { null }));
 
             var (_, ac2, dc2) = InProgressStore.Read("test-inprogress2.txt");
 
             if (ac2.Count == 0 || ac2[0] != null || dc2.Count == 0 || dc2[0] != null)
             {
                 throw new Exception("Blank clues mismatch");
+            }
+
+            // .puz missing clues are blank too (title, author, copyright, 2 clues, notes)
+            PuzWriter.Write(g, "test-blank.puz", title: "Test");
+
+            var puz = File.ReadAllBytes("test-blank.puz");
+            int atPuz = 0x34 + 2 * 5 * 3;
+            var puzStrings = new List<string>();
+
+            for (int i = 0; i < 6; i++)
+            {
+                int end = Array.IndexOf(puz, (byte)0, atPuz);
+                puzStrings.Add(System.Text.Encoding.ASCII.GetString(puz, atPuz, end - atPuz));
+                atPuz = end + 1;
+            }
+
+            if (puzStrings[0] != "Test" || puzStrings.Skip(1).Any(s => s.Length != 0))
+            {
+                throw new Exception("Puz blank clues mismatch");
+            }
+
+            // PDF: clue-only lines (no answer) plus a 25% solution page
+            PdfWriter.WriteBlank(g, "test-clue.pdf", title: "Test", acrossClues: new string?[] { "<5 letters" }, downClues: new string?[] { "feline" });
+            var cluePdf = System.Text.Encoding.Latin1.GetString(File.ReadAllBytes("test-clue.pdf"));
+
+            if (!cluePdf.Contains("1. <5 letters") || cluePdf.Contains("CRANE"))
+            {
+                throw new Exception("Pdf clue lines mismatch");
             }
 
             // clues that do not fit page 1 must flow to extra pages, not be cut
@@ -120,6 +148,21 @@ public static class Program
             if (pageCount < 2)
             {
                 throw new Exception("Clue pages missing");
+            }
+
+            // small clue PDF: blank page + solution page only, with letters filled in
+            int solPages = 0;
+            int atSol = 0;
+
+            while ((atSol = cluePdf.IndexOf(marker, atSol, StringComparison.Ordinal)) >= 0)
+            {
+                solPages++;
+                atSol += marker.Length;
+            }
+
+            if (solPages != 2 || !cluePdf.Contains("Solution") || !cluePdf.Contains("(C)") || !cluePdf.Contains("(R)"))
+            {
+                throw new Exception("Solution page missing");
             }
 
             Console.WriteLine($"test ok density {best.Density:P1}");
