@@ -146,6 +146,7 @@ public static class PuzWriter
         header[0x2D] = (byte)h;
         header[0x2E] = (byte)(nClues & 0xFF);
         header[0x2F] = (byte)((nClues >> 8) & 0xFF);
+        header[0x30] = 1; // bitmask: Across Lite writes 0x0001 here; 0 crashes it
 
         // rest zero: bitmask, scrambled tag, reserved
         System.Text.Encoding.ASCII.GetBytes("ACROSS&DOWN\0").CopyTo(header, 0x02);

@@ -123,6 +123,11 @@ public static class Program
                 throw new Exception("Puz blank clues mismatch");
             }
 
+            if (puz[0x30] != 1 || puz[0x31] != 0)
+            {
+                throw new Exception("Puz bitmask mismatch");
+            }
+
             // PDF: clue-only lines (no answer) plus a 25% solution page
             PdfWriter.WriteBlank(g, "test-clue.pdf", title: "Test", acrossClues: new string?[] { "<5 letters" }, downClues: new string?[] { "feline" });
             var cluePdf = System.Text.Encoding.Latin1.GetString(File.ReadAllBytes("test-clue.pdf"));
