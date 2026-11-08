@@ -74,10 +74,11 @@ public static class InProgressStore
         RemoveFromMru(path);
     }
 
-    public static (CrosswordGrid Grid, List<string?> AcrossClues, List<string?> DownClues) Read(string path)
+    public static (CrosswordGrid Grid, List<string?> AcrossClues, List<string?> DownClues, string Title) Read(string path)
     {
         var lines = File.ReadAllLines(path);
 
+        string title = "";
         var gridLines = new List<string>();
         var acrossLines = new List<string>();
         var downLines = new List<string>();
@@ -94,7 +95,11 @@ public static class InProgressStore
                 continue;
             }
 
-            if (section is "<GRID>" or "<CROSSWORD>")
+            if (section == "<TITLE>" && title.Length == 0)
+            {
+                title = line.Trim();
+            }
+            else if (section is "<GRID>" or "<CROSSWORD>")
             {
                 if (line.Trim().Length > 0)
                 {
@@ -133,6 +138,6 @@ public static class InProgressStore
             downClues.Add(clue.Length == 0 ? null : clue);
         }
 
-        return (grid, acrossClues, downClues);
+        return (grid, acrossClues, downClues, title);
     }
 }

@@ -40,12 +40,15 @@
                     <ListBox x:Name="AcrossList"/>
                 </StackPanel>
             </ScrollViewer>
-            <Grid Grid.Column="1">
-                <ScrollViewer Margin="16" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <Grid x:Name="Board"/>
-                </ScrollViewer>
-                <TextBlock x:Name="BoardOverlay" Text="Generate again" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" IsVisible="False"/>
-            </Grid>
+            <DockPanel Grid.Column="1">
+                <TextBox x:Name="TitleBox" DockPanel.Dock="Top" HorizontalAlignment="Center" Width="400" Margin="0,8,0,0" FontSize="16" FontWeight="Bold" TextAlignment="Center" Watermark="Puzzle title" TextChanged="TitleBox_TextChanged"/>
+                <Grid x:Name="GridBackground">
+                    <ScrollViewer Margin="16" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                        <Grid x:Name="Board" HorizontalAlignment="Center"/>
+                    </ScrollViewer>
+                    <TextBlock x:Name="BoardOverlay" Text="Generate again" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" IsVisible="False"/>
+                </Grid>
+            </DockPanel>
             <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock Text="Down" FontWeight="Bold" Margin="8,8,8,4"/>

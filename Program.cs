@@ -49,6 +49,15 @@ public static class Program
                 throw new Exception("Filler filter failed");
             }
 
+            // filler order: longest first, 3-letter last
+            var order = new List<string> { "CAT", "GOLD", "CRANE", "DOGS" };
+            order.Sort(PuzzleService.CompareByLength);
+
+            if (order[0] != "CRANE" || order[^1] != "CAT")
+            {
+                throw new Exception("Filler order failed");
+            }
+
             var primary = PuzzleService.FindResource("google-10000-english-no-swears.txt");
 
             if (primary == null)
@@ -82,7 +91,12 @@ public static class Program
             // work-file round-trip: escaped clue and clue equal to its answer survive
             File.WriteAllText("test-inprogress.txt", AcrossTextWriter.Text(g, title: "Test", acrossClues: new string?[] { "<5 letters" }, downClues: new string?[] { "CAT" }));
 
-            var (g2, ac, dc) = InProgressStore.Read("test-inprogress.txt");
+            var (g2, ac, dc, title) = InProgressStore.Read("test-inprogress.txt");
+
+            if (title != "Test")
+            {
+                throw new Exception("In-progress title mismatch");
+            }
 
             if (g2.Cells.Count != g.Cells.Count || !g2.Cells.All(kv => g2.Cells.TryGetValue(kv.Key, out char ch) && ch == kv.Value))
             {
@@ -97,11 +111,43 @@ public static class Program
             // missing clues round-trip as blank, never as the word itself
             File.WriteAllText("test-inprogress2.txt", AcrossTextWriter.Text(g, title: "Test", acrossClues: new string?[] { null }, downClues: new string?[] { null }));
 
-            var (_, ac2, dc2) = InProgressStore.Read("test-inprogress2.txt");
+            var (_, ac2, dc2, _) = InProgressStore.Read("test-inprogress2.txt");
 
             if (ac2.Count == 0 || ac2[0] != null || dc2.Count == 0 || dc2[0] != null)
             {
                 throw new Exception("Blank clues mismatch");
+            }
+
+            // title starting with '<' round-trips (not read as a section tag)
+            File.WriteAllText("test-title.txt", AcrossTextWriter.Text(g, title: "<Test>"));
+
+            var (_, _, _, ltTitle) = InProgressStore.Read("test-title.txt");
+
+            if (ltTitle != "<Test>")
+            {
+                throw new Exception("Title round-trip failed");
+            }
+
+            // clue carry-over: map by word, reapply to a new puzzle's entries
+            var cmap = PuzzleClues.ClueMap(
+                new[] { "1. CRANE", "2. CAT" }, new string?[] { "bird", null },
+                new[] { "1. CAT" }, new string?[] { null });
+
+            if (cmap.Count != 1 || cmap["CRANE"] != "bird")
+            {
+                throw new Exception("Clue map failed");
+            }
+
+            var newAcross = new List<string> { "1. CRANE", "2. DOG" };
+            var newAcrossClues = new List<string?>(new string?[2]);
+            var newDown = new List<string> { "1. CAT" };
+            var newDownClues = new List<string?>(new string?[1]);
+
+            PuzzleClues.ApplyClues(cmap, newAcross, newAcrossClues, newDown, newDownClues);
+
+            if (newAcrossClues[0] != "bird" || newAcrossClues[1] != null || newDownClues[0] != null)
+            {
+                throw new Exception("Clue carry-over failed");
             }
 
             // .puz missing clues are blank too (title, author, copyright, 2 clues, notes)

@@ -28,6 +28,12 @@ public partial class MainWindow : Window
 
     private bool hasEdits;
 
+    private string wordListName = "";
+
+    private bool settingTitle;
+
+    private DispatcherTimer? titleSaveTimer;
+
     private List<string?> acrossClues = new();
 
     private List<string?> downClues = new();
@@ -58,7 +64,67 @@ public partial class MainWindow : Window
 
         SetTheme(variant);
 
+        SetDefaultTitle();
+
+        this.titleSaveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        this.titleSaveTimer.Tick += (_, _) =>
+        {
+            this.titleSaveTimer?.Stop();
+            SaveInProgress();
+        };
+
+        ActualThemeVariantChanged += (_, _) => UpdateGridBackground();
+
         Loaded += OnLoaded;
+    }
+
+    private string DefaultTitle()
+    {
+        var name = Path.GetFileNameWithoutExtension(this.wordListName).Replace('_', ' ').Replace('-', ' ').Trim();
+
+        if (name.Length == 0)
+        {
+            return DateTime.Now.ToString("yyyy-MM-dd");
+        }
+
+        name = name.ToLowerInvariant();
+        name = char.ToUpperInvariant(name[0]) + name[1..];
+
+        return $"{name} {DateTime.Now:yyyy-MM-dd}";
+    }
+
+    private string CurrentTitle()
+    {
+        return string.IsNullOrWhiteSpace(TitleBox.Text) ? DefaultTitle() : TitleBox.Text.Trim();
+    }
+
+    private void SetDefaultTitle()
+    {
+        this.settingTitle = true;
+
+        try
+        {
+            TitleBox.Text = DefaultTitle();
+        }
+        finally
+        {
+            this.settingTitle = false;
+        }
+    }
+
+    private void TitleBox_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (this.settingTitle)
+        {
+            return;
+        }
+
+        if (this.best != null && this.best.Grid.Cells.Count > 0)
+        {
+            this.hasEdits = true;
+            this.titleSaveTimer?.Stop();
+            this.titleSaveTimer?.Start();
+        }
     }
 
     private async void OnLoaded(object? sender, EventArgs e)
@@ -87,6 +153,9 @@ public partial class MainWindow : Window
             if (lines.Count > 0)
             {
                 this.words = lines.ToArray();
+                this.wordListName = "words.txt";
+
+                SetDefaultTitle();
 
                 SetStatus($"Loaded words.txt ({lines.Count} words)");
             }
@@ -115,6 +184,13 @@ public partial class MainWindow : Window
         }
     }
 
+    private Dictionary<string, string> ClueMap()
+    {
+        EnsureClueLists();
+
+        return PuzzleClues.ClueMap(this.across, this.acrossClues, this.down, this.downClues);
+    }
+
     private void RefreshClueLists()
     {
         EnsureClueLists();
@@ -140,12 +216,7 @@ public partial class MainWindow : Window
 
     private Control MakeClueRow(string entry, bool isAcross, int index, string? clue)
     {
-        var word = entry;
-
-        if (entry.Contains(". "))
-        {
-            word = entry[(entry.IndexOf(". ") + 2)..];
-        }
+        var word = PuzzleClues.WordOf(entry);
 
         var row = new Grid
         {
@@ -222,7 +293,7 @@ public partial class MainWindow : Window
         }
 
         var entry = list[index];
-        var word = entry[(entry.IndexOf(". ") + 2)..];
+        var word = PuzzleClues.WordOf(entry);
         var current = index < clues.Count ? clues[index] : null;
 
         var win = new ClueWindow(word, current);
@@ -320,6 +391,7 @@ public partial class MainWindow : Window
 
             this.inProgressPath = null;
             this.hasEdits = false;
+            this.titleSaveTimer?.Stop();
 
             RefreshClueLists();
 
@@ -358,7 +430,7 @@ public partial class MainWindow : Window
                 this.inProgressPath = InProgressStore.CreatePath();
             }
 
-            File.WriteAllText(this.inProgressPath, AcrossTextWriter.Text(this.best.Grid, title: "AICrosswordGen", acrossClues: this.acrossClues, downClues: this.downClues));
+            File.WriteAllText(this.inProgressPath, AcrossTextWriter.Text(this.best.Grid, title: CurrentTitle(), acrossClues: this.acrossClues, downClues: this.downClues));
             InProgressStore.TouchMru(this.inProgressPath);
             RefreshRecentMenu();
 
@@ -374,6 +446,8 @@ public partial class MainWindow : Window
 
     private void DiscardInProgress()
     {
+        this.titleSaveTimer?.Stop();
+
         if (this.inProgressPath != null)
         {
             InProgressStore.Delete(this.inProgressPath);
@@ -450,7 +524,7 @@ public partial class MainWindow : Window
                 path = copy;
             }
 
-            var (grid, acrossClues, downClues) = InProgressStore.Read(path);
+            var (grid, acrossClues, downClues, title) = InProgressStore.Read(path);
 
             if (grid.Cells.Count == 0)
             {
@@ -463,12 +537,12 @@ public partial class MainWindow : Window
 
             foreach (var s in across)
             {
-                used.Add(s[(s.IndexOf(". ") + 2)..]);
+                used.Add(PuzzleClues.WordOf(s));
             }
 
             foreach (var s in down)
             {
-                used.Add(s[(s.IndexOf(". ") + 2)..]);
+                used.Add(PuzzleClues.WordOf(s));
             }
 
             foreach (var w in used)
@@ -483,6 +557,17 @@ public partial class MainWindow : Window
             this.hasEdits = true;
 
             Render();
+
+            this.settingTitle = true;
+
+            try
+            {
+                TitleBox.Text = string.IsNullOrWhiteSpace(title) ? DefaultTitle() : title;
+            }
+            finally
+            {
+                this.settingTitle = false;
+            }
 
             // Render clears the clues, so reapply the loaded ones
             this.acrossClues = acrossClues;
@@ -522,15 +607,37 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (this.hasEdits && this.best != null && this.best.Grid.Cells.Count > 0)
+        var keptClues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        if (this.best != null && this.best.Grid.Cells.Count > 0)
         {
-            var confirm = new ConfirmWindow("Current puzzle will be discarded and a new one will be generated. Continue?", "Discard & Generate", "Cancel");
+            keptClues = ClueMap();
 
-            await confirm.ShowDialog(this);
-
-            if (!confirm.Accepted)
+            if (keptClues.Count > 0)
             {
-                return;
+                var confirm = new ConfirmWindow($"Current puzzle will be regenerated. Keep the existing clues for words used in the new puzzle? ({keptClues.Count} clue(s))", "Keep clues", "Cancel", "Discard clues");
+
+                await confirm.ShowDialog(this);
+
+                if (confirm.ThirdAccepted)
+                {
+                    keptClues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                }
+                else if (!confirm.Accepted)
+                {
+                    return;
+                }
+            }
+            else if (this.hasEdits)
+            {
+                var confirm = new ConfirmWindow("Current puzzle will be discarded and a new one will be generated. Continue?", "Discard & Generate", "Cancel");
+
+                await confirm.ShowDialog(this);
+
+                if (!confirm.Accepted)
+                {
+                    return;
+                }
             }
 
             DiscardInProgress();
@@ -582,7 +689,7 @@ public partial class MainWindow : Window
         {
             this.best = await Task.Run(GeneratePuzzle);
 
-            Render();
+            Render(keptClues);
             this.hasEdits = false;
             SaveInProgress();
         }
@@ -594,7 +701,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Render()
+    private void Render(Dictionary<string, string>? keepClues = null)
     {
         if (this.best == null || this.best.Grid.Cells.Count == 0)
         {
@@ -611,6 +718,11 @@ public partial class MainWindow : Window
         this.down = down;
         this.acrossClues = new List<string?>(new string?[across.Count]);
         this.downClues = new List<string?>(new string?[down.Count]);
+
+        if (keepClues != null && keepClues.Count > 0)
+        {
+            PuzzleClues.ApplyClues(keepClues, across, this.acrossClues, down, this.downClues);
+        }
 
         RefreshClueLists();
 
@@ -721,6 +833,9 @@ public partial class MainWindow : Window
         }
 
         this.words = words;
+        this.wordListName = files[0].Name;
+
+        SetDefaultTitle();
 
         SetStatus($"Loaded {files[0].Name} ({this.words.Length} words)");
     }
@@ -788,8 +903,8 @@ public partial class MainWindow : Window
 
         try
         {
-            PuzWriter.Write(this.best.Grid, path, title: "AICrosswordGen", acrossClues: this.acrossClues, downClues: this.downClues);
-            await File.WriteAllTextAsync(txtPath, AcrossTextWriter.Text(this.best.Grid, title: "AICrosswordGen", acrossClues: this.acrossClues, downClues: this.downClues));
+            PuzWriter.Write(this.best.Grid, path, title: CurrentTitle(), acrossClues: this.acrossClues, downClues: this.downClues);
+            await File.WriteAllTextAsync(txtPath, AcrossTextWriter.Text(this.best.Grid, title: CurrentTitle(), acrossClues: this.acrossClues, downClues: this.downClues));
         }
         catch (Exception ex)
         {
@@ -840,7 +955,7 @@ public partial class MainWindow : Window
 
         try
         {
-            PdfWriter.WriteBlank(this.best.Grid, path, title: "AICrosswordGen", acrossClues: this.acrossClues, downClues: this.downClues);
+            PdfWriter.WriteBlank(this.best.Grid, path, title: CurrentTitle(), acrossClues: this.acrossClues, downClues: this.downClues);
         }
         catch (Exception ex)
         {
@@ -871,7 +986,7 @@ public partial class MainWindow : Window
 
         try
         {
-            await File.WriteAllTextAsync(path, AcrossTextWriter.Text(this.best.Grid, title: "AICrosswordGen", acrossClues: this.acrossClues, downClues: this.downClues));
+            await File.WriteAllTextAsync(path, AcrossTextWriter.Text(this.best.Grid, title: CurrentTitle(), acrossClues: this.acrossClues, downClues: this.downClues));
         }
         catch (Exception ex)
         {
@@ -884,6 +999,13 @@ public partial class MainWindow : Window
 
     private void Quit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        this.titleSaveTimer?.Stop();
+
+        if (this.hasEdits && this.best != null && this.best.Grid.Cells.Count > 0)
+        {
+            SaveInProgress();
+        }
+
         Close();
     }
 
@@ -922,6 +1044,8 @@ public partial class MainWindow : Window
             Avalonia.Application.Current.RequestedThemeVariant = variant;
         }
 
+        UpdateGridBackground();
+
         DarkItem.Header = variant == Avalonia.Styling.ThemeVariant.Dark ? "✓ Dark" : "_Dark";
         LightItem.Header = variant == Avalonia.Styling.ThemeVariant.Light ? "✓ Light" : "_Light";
         SystemItem.Header = variant == Avalonia.Styling.ThemeVariant.Default ? "✓ System" : "_System";
@@ -934,6 +1058,11 @@ public partial class MainWindow : Window
 
             SettingsStore.Save(this.settings);
         }
+    }
+
+    private void UpdateGridBackground()
+    {
+        GridBackground.Background = ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark ? Brushes.Gray : Brushes.White;
     }
 
     private void ThemeDark_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

@@ -55,9 +55,9 @@ public static class PuzzleService
         return seen.Count > 1;
     }
 
-    static int CompareByLength(string a, string b)
+    internal static int CompareByLength(string a, string b)
     {
-        return a.Length.CompareTo(b.Length);
+        return b.Length.CompareTo(a.Length);
     }
 
     static int CompareByScoreDesc(Models.Placement a, Models.Placement b)

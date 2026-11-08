@@ -25,7 +25,7 @@ public static class AcrossTextWriter
 
         sb.AppendLine("<ACROSS PUZZLE>");
         sb.AppendLine("<TITLE>");
-        sb.AppendLine(title);
+        sb.AppendLine(Sanitize(title));
         sb.AppendLine("<AUTHOR>");
         sb.AppendLine(author);
         sb.AppendLine("<COPYRIGHT>");

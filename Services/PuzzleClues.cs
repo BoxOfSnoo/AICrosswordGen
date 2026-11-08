@@ -5,6 +5,58 @@ namespace AICrosswordGen.Services;
 
 public static class PuzzleClues
 {
+    public static string WordOf(string entry)
+    {
+        return entry.Contains(". ") ? entry[(entry.IndexOf(". ") + 2)..] : entry;
+    }
+
+    public static Dictionary<string, string> ClueMap(
+        IReadOnlyList<string> across, IReadOnlyList<string?> acrossClues,
+        IReadOnlyList<string> down, IReadOnlyList<string?> downClues)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 0; i < across.Count; i++)
+        {
+            if (i < acrossClues.Count && !string.IsNullOrWhiteSpace(acrossClues[i]))
+            {
+                map.TryAdd(WordOf(across[i]), acrossClues[i]!);
+            }
+        }
+
+        for (int i = 0; i < down.Count; i++)
+        {
+            if (i < downClues.Count && !string.IsNullOrWhiteSpace(downClues[i]))
+            {
+                map.TryAdd(WordOf(down[i]), downClues[i]!);
+            }
+        }
+
+        return map;
+    }
+
+    public static void ApplyClues(
+        Dictionary<string, string> map,
+        List<string> across, List<string?> acrossClues,
+        List<string> down, List<string?> downClues)
+    {
+        for (int i = 0; i < across.Count; i++)
+        {
+            if (map.TryGetValue(WordOf(across[i]), out var clue))
+            {
+                acrossClues[i] = clue;
+            }
+        }
+
+        for (int i = 0; i < down.Count; i++)
+        {
+            if (map.TryGetValue(WordOf(down[i]), out var clue))
+            {
+                downClues[i] = clue;
+            }
+        }
+    }
+
     public static (int[,] Numbers, List<string> Across, List<string> Down) Get(CrosswordGrid grid)
     {
         var (minR, maxR, minC, maxC) = grid.Bounds();
