@@ -65,6 +65,70 @@ public static class PuzzleService
         return b.Score.CompareTo(a.Score);
     }
 
+    static bool CoversAny(Models.Placement p, HashSet<(int Row, int Col)> dots)
+    {
+        for (int i = 0; i < p.Word.Length; i++)
+        {
+            int r = p.Row + (p.Horizontal ? 0 : i);
+            int c = p.Col + (p.Horizontal ? i : 0);
+
+            if (dots.Contains((r, c)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // shortcut: pre-filter checks any neighbour letter; misses rare cross-only fills, drop filter when scans feel slow
+    static bool CanBridge(string w, HashSet<char> neighbours)
+    {
+        for (int i = 0; i < w.Length; i++)
+        {
+            if (neighbours.Contains(w[i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // empty cells inside bounds with filled neighbours on both sides (single dot)
+    internal static List<(int Row, int Col)> FindIsolatedDots(Models.CrosswordGrid grid)
+    {
+        var dots = new List<(int Row, int Col)>();
+
+        if (grid.IsEmpty)
+        {
+            return dots;
+        }
+
+        var (minR, maxR, minC, maxC) = grid.Bounds();
+
+        for (int r = minR; r <= maxR; r++)
+        {
+            for (int c = minC; c <= maxC; c++)
+            {
+                if (grid.Cells.ContainsKey((r, c)))
+                {
+                    continue;
+                }
+
+                bool h = grid.Cells.ContainsKey((r, c - 1)) && grid.Cells.ContainsKey((r, c + 1));
+                bool v = grid.Cells.ContainsKey((r - 1, c)) && grid.Cells.ContainsKey((r + 1, c));
+
+                if (h || v)
+                {
+                    dots.Add((r, c));
+                }
+            }
+        }
+
+        return dots;
+    }
+
     public static SolveResult Generate(IEnumerable<string> words, AppSettings settings, Action<int, int>? progress = null)
     {
         var solver = new Solver(words, settings.Seed);
@@ -125,6 +189,7 @@ public static class PuzzleService
             }
 
             var usedSet = new HashSet<string>(best.Used, StringComparer.OrdinalIgnoreCase);
+            var usedAll = new List<string>(best.Used);
             var fi = 0;
 
             foreach (var w in fillers)
@@ -162,12 +227,99 @@ public static class PuzzleService
 
                 usedSet.Add(w);
 
+                if (!usedAll.Contains(w))
+                {
+                    usedAll.Add(w);
+                }
+
                 best = best with
                 {
                     Density = (double)best.Grid.Cells.Count / Math.Max(1, best.Grid.Area()),
                     Area = best.Grid.Area()
                 };
             }
+
+            // gap scan: isolated single dots flanked on both sides
+            bool gapChanged = true;
+            int gapPass = 0;
+
+            while (gapChanged)
+            {
+                gapChanged = false;
+
+                var dots = FindIsolatedDots(best.Grid);
+
+                if (dots.Count == 0)
+                {
+                    break;
+                }
+
+                progress?.Invoke(fillers.Count + gapPass, fillers.Count + dots.Count);
+                gapPass++;
+
+                var dotSet = new HashSet<(int Row, int Col)>(dots);
+                var neighbours = new HashSet<char>();
+
+                foreach (var (r, c) in dots)
+                {
+                    foreach (var (nr, nc) in new[] { (r, c - 1), (r, c + 1), (r - 1, c), (r + 1, c) })
+                    {
+                        if (best.Grid.Cells.TryGetValue((nr, nc), out char ch))
+                        {
+                            neighbours.Add(ch);
+                        }
+                    }
+                }
+
+                Models.Placement? gapBest = null;
+                string? gapWord = null;
+
+                foreach (var w in fillers)
+                {
+                    if (usedSet.Contains(w) || !CanBridge(w, neighbours))
+                    {
+                        continue;
+                    }
+
+                    foreach (var c in best.Grid.Candidates(w))
+                    {
+                        if (c.BboxGrowth != 0 || !CoversAny(c, dotSet))
+                        {
+                            continue;
+                        }
+
+                        if (gapBest == null || c.Score > gapBest.Value.Score)
+                        {
+                            gapBest = c;
+                            gapWord = w;
+                        }
+                    }
+                }
+
+                if (gapBest != null && gapWord != null)
+                {
+                    best.Grid.Place(gapBest.Value);
+                    usedSet.Add(gapWord);
+
+                    if (!usedAll.Contains(gapWord))
+                    {
+                        usedAll.Add(gapWord);
+                    }
+
+                    best = best with
+                    {
+                        Density = (double)best.Grid.Cells.Count / Math.Max(1, best.Grid.Area()),
+                        Area = best.Grid.Area()
+                    };
+                    gapChanged = true;
+                }
+            }
+
+            best = best with
+            {
+                Used = usedAll,
+                Unused = best.Unused.Where(u => !usedSet.Contains(u)).ToList()
+            };
         }
 
         return best;

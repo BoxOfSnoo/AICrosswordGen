@@ -58,6 +58,16 @@ public static class Program
                 throw new Exception("Filler order failed");
             }
 
+            // gap scan: isolated dot flanked on both sides is found
+            var gapG = new CrosswordGrid(new[] { "CAT" });
+            gapG.Place(new Placement("C", 0, 0, true, 0, 1, 0, 0));
+            gapG.Place(new Placement("T", 0, 2, true, 0, 1, 0, 0));
+
+            if (PuzzleService.FindIsolatedDots(gapG).Count != 1)
+            {
+                throw new Exception("Gap dots failed");
+            }
+
             var primary = PuzzleService.FindResource("google-10000-english-no-swears.txt");
 
             if (primary == null)
